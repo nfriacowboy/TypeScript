@@ -361,6 +361,7 @@ namespace ts {
     }
 
     export const enum NodeFlags {
+        None =              0,
         Export =            0x00000001,  // Declarations
         Ambient =           0x00000002,  // Declarations
         Public =            0x00000010,  // Property/Method
@@ -1305,7 +1306,7 @@ namespace ts {
         getCurrentDirectory(): string;
     }
 
-    export interface ParseConfigHost extends ModuleResolutionHost {
+    export interface ParseConfigHost {
         readDirectory(rootDir: string, extension: string, exclude: string[]): string[];
     }
 
@@ -2103,6 +2104,7 @@ namespace ts {
         UMD = 3,
         System = 4,
         ES6 = 5,
+        ES2015 = ES6,
     }
 
     export const enum JsxEmit {
@@ -2128,12 +2130,13 @@ namespace ts {
         ES3 = 0,
         ES5 = 1,
         ES6 = 2,
+        ES2015 = ES6,
         Latest = ES6,
     }
 
     export const enum LanguageVariant {
         Standard,
-        JSX
+        JSX,
     }
 
     export interface ParsedCommandLine {

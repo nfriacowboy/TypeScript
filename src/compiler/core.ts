@@ -437,8 +437,12 @@ namespace ts {
     }
 
     export function concatenateDiagnosticMessageChains(headChain: DiagnosticMessageChain, tailChain: DiagnosticMessageChain): DiagnosticMessageChain {
-        Debug.assert(!headChain.next);
-        headChain.next = tailChain;
+        let lastChain = headChain;
+        while (lastChain.next) {
+            lastChain = lastChain.next;
+        }
+
+        lastChain.next = tailChain;
         return headChain;
     }
 
@@ -700,6 +704,9 @@ namespace ts {
     }
 
     export function getBaseFileName(path: string) {
+        if (!path) {
+            return undefined;
+        }
         let i = path.lastIndexOf(directorySeparator);
         return i < 0 ? path : path.substring(i + 1);
     }
@@ -729,6 +736,17 @@ namespace ts {
      */
     export const moduleFileExtensions = supportedExtensions;
 
+    export function isSupportedSourceFileName(fileName: string) {
+        if (!fileName) { return false; }
+
+        for (let extension of supportedExtensions) {
+            if (fileExtensionIs(fileName, extension)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     const extensionsToRemove = [".d.ts", ".ts", ".js", ".tsx", ".jsx"];
     export function removeFileExtension(path: string): string {
         for (let ext of extensionsToRemove) {
@@ -757,7 +775,7 @@ namespace ts {
     };
 
     export interface ObjectAllocator {
-        getNodeConstructor(kind: SyntaxKind): new () => Node;
+        getNodeConstructor(kind: SyntaxKind): new (pos?: number, end?: number) => Node;
         getSymbolConstructor(): new (flags: SymbolFlags, name: string) => Symbol;
         getTypeConstructor(): new (checker: TypeChecker, flags: TypeFlags) => Type;
         getSignatureConstructor(): new (checker: TypeChecker) => Signature;
@@ -778,15 +796,13 @@ namespace ts {
 
     export let objectAllocator: ObjectAllocator = {
         getNodeConstructor: kind => {
-            function Node() {
+            function Node(pos: number, end: number) {
+                this.pos = pos;
+                this.end = end;
+                this.flags = NodeFlags.None;
+                this.parent = undefined;
             }
-            Node.prototype = {
-                kind: kind,
-                pos: -1,
-                end: -1,
-                flags: 0,
-                parent: undefined,
-            };
+            Node.prototype = { kind };
             return <any>Node;
         },
         getSymbolConstructor: () => <any>Symbol,
@@ -822,5 +838,15 @@ namespace ts {
         export function fail(message?: string): void {
             Debug.assert(false, message);
         }
+    }
+
+    export function copyListRemovingItem<T>(item: T, list: T[]) {
+        let copiedList: T[] = [];
+        for (let e of list) {
+            if (e !== item) {
+                copiedList.push(e);
+            }
+        }
+        return copiedList;
     }
 }
