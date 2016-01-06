@@ -62,6 +62,7 @@ namespace ts {
         useCaseSensitiveFileNames?(): boolean;
         
         getModuleResolutionsForFile?(fileName: string): string;
+        directoryExists(directoryName: string): boolean;
     }
 
     /** Public interface of the the of a config service shim instance.*/
@@ -274,6 +275,7 @@ namespace ts {
         private tracingEnabled = false;
         
         public resolveModuleNames: (moduleName: string[], containingFile: string) => ResolvedModule[];
+        public directoryExists: (directoryName: string) => boolean;
         
         constructor(private shimHost: LanguageServiceShimHost) {
             // if shimHost is a COM object then property check will become method call with no arguments.
@@ -286,6 +288,9 @@ namespace ts {
                         return result ? { resolvedFileName: result } : undefined;
                     });
                 };
+            }
+            if ("directoryExists" in this.shimHost) {
+                this.directoryExists = directoryName => this.shimHost.directoryExists(directoryName);
             }
         }
 
@@ -323,7 +328,6 @@ namespace ts {
             // TODO: should this be '==='?
             if (settingsJson == null || settingsJson == "") {
                 throw Error("LanguageServiceShimHostAdapter.getCompilationSettings: empty compilationSettings");
-                return null;
             }
             return <CompilerOptions>JSON.parse(settingsJson);
         }
@@ -406,9 +410,14 @@ namespace ts {
         }
     }
 
-    export class CoreServicesShimHostAdapter implements ParseConfigHost {
+    export class CoreServicesShimHostAdapter implements ParseConfigHost, ModuleResolutionHost {
 
+        public directoryExists: (directoryName: string) => boolean;
+        
         constructor(private shimHost: CoreServicesShimHost) {
+            if ("directoryExists" in this.shimHost) {
+                this.directoryExists = directoryName => this.shimHost.directoryExists(directoryName);
+            }
         }
 
         public readDirectory(rootDir: string, extension: string, exclude: string[]): string[] {
@@ -425,11 +434,11 @@ namespace ts {
             }
             return JSON.parse(encoded);
         }
-        
+
         public fileExists(fileName: string): boolean {
             return this.shimHost.fileExists(fileName);
         }
-        
+
         public readFile(fileName: string): string {
             return this.shimHost.readFile(fileName);
         }
@@ -957,7 +966,8 @@ namespace ts {
             return this.forwardJSONCall(
                 "getPreProcessedFileInfo('" + fileName + "')",
                 () => {
-                    var result = preProcessFile(sourceTextSnapshot.getText(0, sourceTextSnapshot.getLength()));
+                    // for now treat files as JavaScript 
+                    var result = preProcessFile(sourceTextSnapshot.getText(0, sourceTextSnapshot.getLength()), /* readImportFiles */ true, /* detectJavaScriptImports */ true);
                     var convertResult = {
                         referencedFiles: <IFileReference[]>[],
                         importedFiles: <IFileReference[]>[],
@@ -1033,7 +1043,7 @@ namespace ts {
         public createLanguageServiceShim(host: LanguageServiceShimHost): LanguageServiceShim {
             try {
                 if (this.documentRegistry === undefined) {
-                    this.documentRegistry = createDocumentRegistry(host.useCaseSensitiveFileNames && host.useCaseSensitiveFileNames());
+                    this.documentRegistry = createDocumentRegistry(host.useCaseSensitiveFileNames && host.useCaseSensitiveFileNames(), host.getCurrentDirectory());
                 }
                 var hostAdapter = new LanguageServiceShimHostAdapter(host);
                 var languageService = createLanguageService(hostAdapter, this.documentRegistry);
@@ -1069,7 +1079,7 @@ namespace ts {
         public close(): void {
             // Forget all the registered shims
             this._shims = [];
-            this.documentRegistry = createDocumentRegistry();
+            this.documentRegistry = undefined;
         }
 
         public registerShim(shim: Shim): void {
