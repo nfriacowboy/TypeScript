@@ -72,12 +72,20 @@ namespace ts.formatting {
         if (line === 0) {
             return [];
         }
-        // get the span for the previous\current line
+        // After the enter key, the cursor is now at a new line. The new line may or may not contain non-whitespace characters.
+        // If the new line has only whitespaces, we won't want to format this line, because that would remove the indentation as
+        // trailing whitespaces. So the end of the formatting span should be the later one between:
+        //  1. the end of the previous line
+        //  2. the last non-whitespace character in the current line
+        let endOfFormatSpan = getEndLinePosition(line, sourceFile);
+        while (isWhiteSpace(sourceFile.text.charCodeAt(endOfFormatSpan)) && !isLineBreak(sourceFile.text.charCodeAt(endOfFormatSpan))) {
+            endOfFormatSpan--;
+        }
         let span = {
             // get start position for the previous line
             pos: getStartPositionOfLine(line - 1, sourceFile),
-            // get end position for the current line (end value is exclusive so add 1 to the result)
-            end: getEndLinePosition(line, sourceFile) + 1
+            // end value is exclusive so add 1 to the result
+            end: endOfFormatSpan + 1
         }
         return formatSpan(span, sourceFile, options, rulesProvider, FormattingRequestKind.FormatOnEnter);
     }
@@ -121,7 +129,7 @@ namespace ts.formatting {
 
     function findOutermostParent(position: number, expectedTokenKind: SyntaxKind, sourceFile: SourceFile): Node {
         let precedingToken = findPrecedingToken(position, sourceFile);
-        
+
         // when it is claimed that trigger character was typed at given position 
         // we verify that there is a token with a matching kind whose end is equal to position (because the character was just typed).
         // If this condition is not hold - then trigger character was typed in some other context, 
@@ -151,7 +159,7 @@ namespace ts.formatting {
 
         return current;
     }
-    
+
     // Returns true if node is a element in some list in parent
     // i.e. parent is class declaration with the list of members and node is one of members.
     function isListElement(parent: Node, node: Node): boolean {
@@ -198,7 +206,7 @@ namespace ts.formatting {
         if (!errors.length) {
             return rangeHasNoErrors;
         }
-        
+
         // pick only errors that fall in range
         let sorted = errors
             .filter(d => rangeOverlapsWithStartEnd(originalRange, d.start, d.start + d.length))
@@ -256,7 +264,7 @@ namespace ts.formatting {
             return enclosingNode.pos;
         }
 
-        // preceding token ends after the start of original range (i.e when originaRange.pos falls in the middle of literal)
+        // preceding token ends after the start of original range (i.e when originalRange.pos falls in the middle of literal)
         // start from the beginning of enclosingNode to handle the entire 'originalRange'
         if (precedingToken.end >= originalRange.pos) {
             return enclosingNode.pos;
@@ -339,6 +347,14 @@ namespace ts.formatting {
 
             let delta = getOwnOrInheritedDelta(enclosingNode, options, sourceFile);
             processNode(enclosingNode, enclosingNode, startLine, undecoratedStartLine, initialIndentation, delta);
+        }
+
+        if (!formattingScanner.isOnToken()) {
+            let leadingTrivia = formattingScanner.getCurrentLeadingTrivia();
+            if (leadingTrivia) {
+                processTrivia(leadingTrivia, enclosingNode, enclosingNode, undefined);
+                trimTrailingWhitespacesForRemainingRange();
+            }
         }
 
         formattingScanner.close();
@@ -828,9 +844,7 @@ namespace ts.formatting {
                 }
 
                 // We need to trim trailing whitespace between the tokens if they were on different lines, and no rule was applied to put them on the same line
-                trimTrailingWhitespaces =
-                (rule.Operation.Action & (RuleAction.NewLine | RuleAction.Space)) &&
-                rule.Flag !== RuleFlags.CanDeleteNewLines;
+                trimTrailingWhitespaces = !(rule.Operation.Action & RuleAction.Delete) && rule.Flag !== RuleFlags.CanDeleteNewLines;
             }
             else {
                 trimTrailingWhitespaces = true;
@@ -929,15 +943,39 @@ namespace ts.formatting {
                     continue;
                 }
 
-                let pos = lineEndPosition;
-                while (pos >= lineStartPosition && isWhiteSpace(sourceFile.text.charCodeAt(pos))) {
-                    pos--;
-                }
-                if (pos !== lineEndPosition) {
-                    Debug.assert(pos === lineStartPosition || !isWhiteSpace(sourceFile.text.charCodeAt(pos)));
-                    recordDelete(pos + 1, lineEndPosition - pos);
+                let whitespaceStart = getTrailingWhitespaceStartPosition(lineStartPosition, lineEndPosition);
+                if (whitespaceStart !== -1) {
+                    Debug.assert(whitespaceStart === lineStartPosition || !isWhiteSpace(sourceFile.text.charCodeAt(whitespaceStart - 1)));
+                    recordDelete(whitespaceStart, lineEndPosition + 1 - whitespaceStart);
                 }
             }
+        }
+
+        /**
+         * @param start The position of the first character in range
+         * @param end The position of the last character in range
+         */
+        function getTrailingWhitespaceStartPosition(start: number, end: number) {
+            let pos = end;
+            while (pos >= start && isWhiteSpace(sourceFile.text.charCodeAt(pos))) {
+                pos--;
+            }
+            if (pos !== end) {
+                return pos + 1;
+            }
+            return -1;
+        }
+
+        /**
+         * Trimming will be done for lines after the previous range
+         */
+        function trimTrailingWhitespacesForRemainingRange() {
+            let startPosition = previousRange ? previousRange.end : originalRange.pos;
+
+            let startLine = sourceFile.getLineAndCharacterOfPosition(startPosition).line;
+            let endLine = sourceFile.getLineAndCharacterOfPosition(originalRange.end).line;
+
+            trimTrailingWhitespacesForLines(startLine, endLine + 1, previousRange);
         }
 
         function newTextChange(start: number, len: number, newText: string): TextChange {
