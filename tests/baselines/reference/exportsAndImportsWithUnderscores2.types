@@ -1,5 +1,4 @@
 === tests/cases/conformance/es6/modules/m1.ts ===
-
 var R: any
 >R : any
 
@@ -9,7 +8,7 @@ export default R = {
 >{    "__esmodule": true,    "__proto__": {}} : { "__esmodule": boolean; "__proto__": {}; }
 
     "__esmodule": true,
->true : boolean
+>true : true
 
     "__proto__": {}
 >{} : {}

@@ -2,23 +2,26 @@
 
 // @Filename: file1.ts
 //// class Foo {
-////     constructor(private /*0*/privateParam: number,
-////         public /*1*/publicParam: string,
-////         protected /*2*/protectedParam: boolean) {
-//// 
-////         let localPrivate = /*3*/privateParam;
-////         this./*4*/privateParam += 10;
-//// 
-////         let localPublic = /*5*/publicParam;
-////         this./*6*/publicParam += " Hello!";
-//// 
-////         let localProtected = /*7*/protectedParam;
-////         this./*8*/protectedParam = false;
+////     constructor(private [|{| "isWriteAccess": true, "isDefinition": true, "type": "number" |}privateParam|]: number,
+////         public [|{| "isWriteAccess": true, "isDefinition": true, "type": "string" |}publicParam|]: string,
+////         protected [|{| "isWriteAccess": true, "isDefinition": true, "type": "boolean" |}protectedParam|]: boolean) {
+////
+////         let localPrivate = [|privateParam|];
+////         this.[|privateParam|] += 10;
+////
+////         let localPublic = [|publicParam|];
+////         this.[|publicParam|] += " Hello!";
+////
+////         let localProtected = [|protectedParam|];
+////         this.[|protectedParam|] = false;
 ////     }
 //// }
 
-let markers = test.markers()
-for (let marker of markers) {
-    goTo.position(marker.position);
-    verify.referencesCountIs(3);
-}
+test.rangesByText().forEach((ranges, text) => {
+    const [r0, r1, r2] = ranges;
+    const type = r0.marker.data.type;
+    verify.referenceGroups(ranges, [
+        { definition: `(property) Foo.${text}: ${type}`, ranges: [r0, r2] },
+        { definition: `(parameter) ${text}: ${type}`, ranges: [r1] }
+    ]);
+});

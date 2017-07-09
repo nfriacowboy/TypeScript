@@ -1,5 +1,4 @@
 === tests/cases/compiler/f1.ts ===
-
 export class A {x: number;}
 >A : A
 >x : number
@@ -25,7 +24,7 @@ declare global {
 let x = [1];
 >x : number[]
 >[1] : number[]
->1 : number
+>1 : 1
 
 let y = x.getA().x;
 >y : number

@@ -20,7 +20,6 @@ var Clod = (function () {
     Clod.y = 10;
     return Clod;
 }());
-var Clod;
 (function (Clod) {
     var p = Clod.x;
     var q = x;

@@ -1,15 +1,14 @@
 ﻿/// <reference path='fourslash.ts'/>
 
 //// interface interface1 extends interface1 {
-////    /*1*/doStuff(): void;
-////    /*2*/propName: string;
+////    [|{| "isWriteAccess": true, "isDefinition": true |}doStuff|](): void;
+////    [|{| "isWriteAccess": true, "isDefinition": true |}propName|]: string;
 //// }
 ////
 //// var v: interface1;
-//// v./*3*/propName;
-//// v./*4*/doStuff();
+//// v.[|propName|];
+//// v.[|doStuff|]();
 
-test.markers().forEach(m => {
-    goTo.position(m.position, m.fileName);
-    verify.referencesCountIs(2);
-});
+const ranges = test.rangesByText();
+verify.singleReferenceGroup("(method) interface1.doStuff(): void", ranges.get("doStuff"));
+verify.singleReferenceGroup("(property) interface1.propName: string", ranges.get("propName"));

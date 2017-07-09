@@ -1,11 +1,10 @@
 === tests/cases/compiler/file1.d.ts ===
-
 declare module "file1" {
     class foo {}
->foo : 
+>foo : foo
 
     namespace foo {
->foo : typeof 
+>foo : typeof foo
 
         class A {}
 >A : A

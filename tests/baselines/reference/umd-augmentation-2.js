@@ -1,7 +1,6 @@
 //// [tests/cases/conformance/externalModules/umd-augmentation-2.ts] ////
 
 //// [index.d.ts]
-
 export as namespace Math2d;
 
 export interface Point {
@@ -42,8 +41,8 @@ var t = p.x;
 //// [a.js]
 /// <reference path="node_modules/math2d/index.d.ts" />
 /// <reference path="math2d-augment.d.ts" />
-var v = new exports.Math2d.Vector(3, 2);
-var magnitude = exports.Math2d.getLength(v);
+var v = new Math2d.Vector(3, 2);
+var magnitude = Math2d.getLength(v);
 var p = v.translate(5, 5);
 p = v.reverse();
 var t = p.x;

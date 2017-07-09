@@ -1,19 +1,15 @@
 ﻿/// <reference path='fourslash.ts'/>
 
 //// class Foo {
-////     constructor(public [|publicParam|]: number) {
+////     constructor(public [|{| "isWriteAccess": true, "isDefinition": true |}publicParam|]: number) {
 ////         let localPublic = [|publicParam|];
 ////         this.[|publicParam|] += 10;
 ////     }
 //// }
 
-let ranges = test.ranges();
-verify.assertHasRanges(ranges);
-for (let range of ranges) {
-    goTo.position(range.start);
-
-    verify.referencesCountIs(ranges.length);
-    for (let expectedRange of ranges) {
-        verify.referencesAtPositionContains(expectedRange);
-    }
-}
+const ranges = test.ranges();
+const [r0, r1, r2] = ranges;
+verify.referenceGroups(ranges, [
+    { definition: "(property) Foo.publicParam: number", ranges: [r0, r2] },
+    { definition: "(parameter) publicParam: number", ranges: [r1] }
+]);

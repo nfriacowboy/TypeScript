@@ -35,7 +35,8 @@ export module M1 {
 
 //// [foo1.js]
 "use strict";
-var foo2 = require('./foo2');
+exports.__esModule = true;
+var foo2 = require("./foo2");
 var M1;
 (function (M1) {
     var C1 = (function () {
@@ -50,7 +51,8 @@ var M1;
 })(M1 = exports.M1 || (exports.M1 = {}));
 //// [foo2.js]
 "use strict";
-var foo1 = require('./foo1');
+exports.__esModule = true;
+var foo1 = require("./foo1");
 var M1;
 (function (M1) {
     var C1 = (function () {

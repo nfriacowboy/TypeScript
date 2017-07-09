@@ -163,13 +163,15 @@ function foo8() {
     var x;
 }
 function foo9() {
-    var y = (function () {
-        function class_3() {
-        }
-        class_3.a = x;
-        return class_3;
-    }());
+    var y = (_a = (function () {
+            function class_3() {
+            }
+            return class_3;
+        }()),
+        _a.a = x,
+        _a);
     var x;
+    var _a;
 }
 function foo10() {
     var A = (function () {
@@ -182,12 +184,14 @@ function foo10() {
 }
 function foo11() {
     function f() {
-        var y = (function () {
-            function class_4() {
-            }
-            class_4.a = x;
-            return class_4;
-        }());
+        var y = (_a = (function () {
+                function class_4() {
+                }
+                return class_4;
+            }()),
+            _a.a = x,
+            _a);
+        var _a;
     }
     var x;
 }

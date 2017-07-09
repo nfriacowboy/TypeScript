@@ -1,5 +1,4 @@
 //// [literalsInComputedProperties1.ts]
-
 let x = {
     1:1,
     [2]:1,
@@ -58,8 +57,7 @@ var x = (_a = {
     _a[2] = 1,
     _a["3"] = 1,
     _a["4"] = 1,
-    _a
-);
+    _a);
 x[1].toExponential();
 x[2].toExponential();
 x[3].toExponential();
@@ -81,7 +79,7 @@ z[3].toExponential();
 z[4].toExponential();
 var X;
 (function (X) {
-    X[X["1"] = 1] = "1";
+    X[X[1] = 1] = 1;
     X[X[2] = 2] = 2;
     X[X["3"] = 3] = "3";
     X[X["4"] = 4] = "4";

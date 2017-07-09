@@ -1,5 +1,4 @@
 //// [reactNamespaceJSXEmit.tsx]
-
 declare var myReactLib: any;
 declare var foo: any;
 declare var Bar: any;
@@ -13,8 +12,16 @@ declare var x: any;
 
 
 //// [reactNamespaceJSXEmit.js]
-myReactLib.createElement("foo", {data: true});
-myReactLib.createElement(Bar, {x: x});
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+myReactLib.createElement("foo", { data: true });
+myReactLib.createElement(Bar, { x: x });
 myReactLib.createElement("x-component", null);
-myReactLib.createElement(Bar, myReactLib.__spread({}, x));
-myReactLib.createElement(Bar, myReactLib.__spread({}, x, {y: 2}));
+myReactLib.createElement(Bar, __assign({}, x));
+myReactLib.createElement(Bar, __assign({}, x, { y: 2 }));

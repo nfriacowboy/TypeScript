@@ -6,11 +6,13 @@ import abstract class D {}
 
 //// [classAbstractManyKeywords.js]
 "use strict";
+exports.__esModule = true;
 var A = (function () {
     function A() {
     }
     return A;
 }());
+exports["default"] = A;
 var B = (function () {
     function B() {
     }

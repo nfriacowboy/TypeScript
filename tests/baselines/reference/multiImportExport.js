@@ -37,17 +37,19 @@ var Adder = (function () {
 module.exports = Adder;
 //// [Math.js]
 "use strict";
-var Adder = require('./Adder');
+var Adder = require("./Adder");
 var Math = {
     Adder: Adder
 };
 module.exports = Math;
 //// [Drawing.js]
 "use strict";
-exports.Math = require('./Math/Math');
+exports.__esModule = true;
+exports.Math = require("./Math/Math");
 //// [consumer.js]
 "use strict";
-var Drawing = require('./Drawing');
+exports.__esModule = true;
+var Drawing = require("./Drawing");
 var addr = new Drawing.Math.Adder();
 
 

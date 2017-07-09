@@ -1,5 +1,4 @@
 //// [decoratorMetadataWithConstructorType.ts]
-
 declare var console: {
     log(msg: string): void;
 };
@@ -19,6 +18,7 @@ export class B {
 
 //// [decoratorMetadataWithConstructorType.js]
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var A = (function () {
     function A() {
         console.log('new A');
@@ -32,8 +32,8 @@ var B = (function () {
         this.x = new A();
     }
     __decorate([
-        decorator, 
-        __metadata('design:type', A)
+        decorator,
+        __metadata("design:type", A)
     ], B.prototype, "x", void 0);
     return B;
 }());

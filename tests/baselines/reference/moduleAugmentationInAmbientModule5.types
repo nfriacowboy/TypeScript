@@ -5,7 +5,7 @@ import "array";
 let x = [1];
 >x : number[]
 >[1] : number[]
->1 : number
+>1 : 1
 
 let y = x.getA().x;
 >y : number
@@ -17,7 +17,6 @@ let y = x.getA().x;
 >x : number
 
 === tests/cases/compiler/array.d.ts ===
-
 declare module "A" {
     class A { x: number; }
 >A : A

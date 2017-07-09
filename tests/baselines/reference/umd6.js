@@ -1,7 +1,6 @@
 //// [tests/cases/conformance/externalModules/umd6.ts] ////
 
 //// [foo.d.ts]
-
 declare namespace Thing {
 	export function fn(): number;
 }
@@ -15,4 +14,4 @@ let y: number = Foo.fn();
 
 //// [a.js]
 /// <reference path="foo.d.ts" />
-var y = exports.Foo.fn();
+var y = Foo.fn();
